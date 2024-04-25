@@ -1,0 +1,1682 @@
+openapi: 3.0.3
+info:
+  description: ""
+  license:
+    name: Proprietary
+  title: ston-server
+  version: 1.13.0
+servers:
+- url: /
+tags:
+- description: DEX operations and entities
+  name: Dex
+- description: Jetton specific data
+  name: Jetton
+- description: Wallets specific data
+  name: Wallets
+- description: STON.fi statistics API version 1
+  name: Stats
+- description: Data export to 3rd-party applications
+  name: Export
+paths:
+  /export/cmc/v1:
+    get:
+      operationId: get_cmc_stats
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties:
+                    $ref: '#/components/schemas/PoolStats'
+                  type: object
+                type: array
+          description: Pool statistics in CMC format
+      tags:
+      - Export
+  /v1/assets:
+    get:
+      operationId: get_asset_list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_asset_list_200_response'
+          description: List of available assets
+      tags:
+      - Dex
+  /v1/farms:
+    get:
+      operationId: get_farm_list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_farm_list_200_response'
+          description: List of available farms
+      tags:
+      - Dex
+  /v1/jetton/{addr_str}/address:
+    get:
+      operationId: get_wallet_address
+      parameters:
+      - description: Address of the owner
+        example: EQCM3B12QK1e4yZSf8GtBRT0aLMNyEsBc_DhVfRRtOEffLez
+        explode: true
+        in: query
+        name: owner_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: path
+        name: addr_str
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_wallet_address_200_response'
+          description: Ton Address
+      tags:
+      - Jetton
+  /v1/pools:
+    get:
+      operationId: get_pool_list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_pool_list_200_response'
+          description: List of available pools
+      tags:
+      - Dex
+  /v1/reverse_swap/simulate:
+    post:
+      operationId: dex_reverse_simulate_swap
+      parameters:
+      - description: The address of the token we want to sell
+        example: EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA
+        explode: true
+        in: query
+        name: offer_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: The address of the token we want to buy
+        example: EQCM3B12QK1e4yZSf8GtBRT0aLMNyEsBc_DhVfRRtOEffLez
+        explode: true
+        in: query
+        name: ask_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Number of token units we want to sell
+        example: "300"
+        explode: true
+        in: query
+        name: units
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: "The maximum possible difference between the rates that we expect\
+          \ and which will actually be, in fractions (for example, 0.001 is 0.1%)"
+        example: "0.001"
+        explode: true
+        in: query
+        name: slippage_tolerance
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Referral address
+        explode: true
+        in: query
+        name: referral_address
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dex_reverse_simulate_swap_200_response'
+          description: Simulate swap response
+      tags:
+      - Dex
+  /v1/stats/dex:
+    get:
+      operationId: get_dex_stats
+      parameters:
+      - description: Time since stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-01T12:34:56
+        explode: true
+        in: query
+        name: since
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - description: Time until stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-02T23:59:59
+        explode: true
+        in: query
+        name: until
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          $ref: '#/components/responses/DexStatsResponse'
+      tags:
+      - Stats
+  /v1/stats/operations:
+    get:
+      operationId: get_operation_stats
+      parameters:
+      - description: Time since the stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-01T12:34:56
+        explode: true
+        in: query
+        name: since
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Time until pool stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-02T23:59:59
+        explode: true
+        in: query
+        name: until
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_operation_stats_200_response'
+          description: Wallet operations in pools
+      tags:
+      - Stats
+  /v1/stats/pool:
+    get:
+      operationId: get_pool_stats
+      parameters:
+      - description: Time since the stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-01T12:34:56
+        explode: true
+        in: query
+        name: since
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Time until pool stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-02T23:59:59
+        explode: true
+        in: query
+        name: until
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_pool_stats_200_response'
+          description: Pools statistics for specified period
+      tags:
+      - Stats
+  /v1/swap/simulate:
+    post:
+      operationId: dex_simulate_swap
+      parameters:
+      - description: The address of the token we want to sell
+        example: EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA
+        explode: true
+        in: query
+        name: offer_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: The address of the token we want to buy
+        example: EQCM3B12QK1e4yZSf8GtBRT0aLMNyEsBc_DhVfRRtOEffLez
+        explode: true
+        in: query
+        name: ask_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Number of token units we want to sell
+        example: "300"
+        explode: true
+        in: query
+        name: units
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: "The maximum possible difference between the rates that we expect\
+          \ and which will actually be, in fractions (for example, 0.001 is 0.1%)"
+        example: "0.001"
+        explode: true
+        in: query
+        name: slippage_tolerance
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Referral address
+        explode: true
+        in: query
+        name: referral_address
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dex_reverse_simulate_swap_200_response'
+          description: Simulate swap response
+      tags:
+      - Dex
+  /v1/swap/status:
+    get:
+      operationId: dex_swap_status
+      parameters:
+      - description: Address of the operation router
+        example: EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt
+        explode: true
+        in: query
+        name: router_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Owner`s wallet address
+        example: EQCM3B12QK1e4yZSf8GtBRT0aLMNyEsBc_DhVfRRtOEffLez
+        explode: true
+        in: query
+        name: owner_address
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Id of operation status query
+        example: "1"
+        explode: true
+        in: query
+        name: query_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dex_swap_status_200_response'
+          description: ""
+      tags:
+      - Dex
+  /v1/wallets/{addr_str}/assets:
+    get:
+      operationId: get_wallet_assets
+      parameters:
+      - explode: false
+        in: path
+        name: addr_str
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_asset_list_200_response'
+          description: List of available assets
+      tags:
+      - Wallets
+  /v1/wallets/{addr_str}/farms:
+    get:
+      operationId: get_wallet_farm
+      parameters:
+      - explode: false
+        in: path
+        name: addr_str
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_farm_list_200_response'
+          description: List of available farms
+      tags:
+      - Wallets
+  /v1/wallets/{addr_str}/operations:
+    get:
+      operationId: get_wallet_operations
+      parameters:
+      - description: Time since the stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-01T12:34:56
+        explode: true
+        in: query
+        name: since
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Time until pool stats are requested (YYYY-MM-DDTHH:MM:SS)
+        example: 2023-06-02T23:59:59
+        explode: true
+        in: query
+        name: until
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: target op type
+        example: SendLiquidity
+        explode: true
+        in: query
+        name: op_type
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: false
+        in: path
+        name: addr_str
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_operation_stats_200_response'
+          description: Wallet operations in pools
+      tags:
+      - Wallets
+  /v1/wallets/{addr_str}/pools:
+    get:
+      operationId: get_wallet_pools
+      parameters:
+      - explode: false
+        in: path
+        name: addr_str
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_pool_list_200_response'
+          description: List of available pools
+      tags:
+      - Wallets
+components:
+  responses:
+    AddressResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/get_wallet_address_200_response'
+      description: Ton Address
+    AssetListResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/get_asset_list_200_response'
+      description: List of available assets
+    FarmListResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/get_farm_list_200_response'
+      description: List of available farms
+    OperationStatusResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/dex_swap_status_200_response'
+      description: ""
+    OperationsResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/get_operation_stats_200_response'
+      description: Wallet operations in pools
+    PoolListResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/get_pool_list_200_response'
+      description: List of available pools
+    PoolStatsResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/get_pool_stats_200_response'
+      description: Pools statistics for specified period
+    SimulateSwapResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/dex_reverse_simulate_swap_200_response'
+      description: Simulate swap response
+  schemas:
+    AssetInfoSchema:
+      example:
+        wallet_address: wallet_address
+        symbol: symbol
+        dex_price_usd: dex_price_usd
+        image_url: image_url
+        kind: null
+        deprecated: true
+        third_party_usd_price: third_party_usd_price
+        community: true
+        contract_address: contract_address
+        display_name: display_name
+        blacklisted: true
+        third_party_price_usd: third_party_price_usd
+        default_symbol: true
+        balance: balance
+        decimals: 0
+        dex_usd_price: dex_usd_price
+      properties:
+        balance:
+          description: Asset balance
+          nullable: true
+          type: string
+        blacklisted:
+          description: Asset is blacklisted
+          type: boolean
+        community:
+          description: Asset is community created
+          type: boolean
+        contract_address:
+          description: Address of smart contract
+          type: string
+        decimals:
+          description: Number of decimal places used to represent fractional amounts
+            of an asset
+          format: int32
+          minimum: 0
+          type: integer
+        default_symbol:
+          description: Asset has default symbol
+          type: boolean
+        deprecated:
+          description: Asset is deprecated
+          type: boolean
+        dex_price_usd:
+          description: Ston internal asset price in USD
+          nullable: true
+          type: string
+        dex_usd_price:
+          description: "[DEPRECATED] Ston internal asset price in USD"
+          nullable: true
+          type: string
+        display_name:
+          description: Displayable name
+          nullable: true
+          type: string
+        image_url:
+          description: URL to asset image
+          nullable: true
+          type: string
+        kind:
+          $ref: '#/components/schemas/AssetKindSchema'
+        symbol:
+          description: Asset symbol
+          type: string
+        third_party_price_usd:
+          description: Asset price in USD
+          nullable: true
+          type: string
+        third_party_usd_price:
+          description: "[DEPRECATED] Asset price in USD"
+          nullable: true
+          type: string
+        wallet_address:
+          description: Asset wallet address
+          nullable: true
+          type: string
+      required:
+      - blacklisted
+      - community
+      - contract_address
+      - decimals
+      - default_symbol
+      - deprecated
+      - kind
+      - symbol
+      type: object
+    AssetKindSchema:
+      enum:
+      - Jetton
+      - Wton
+      - Ton
+      type: string
+    CmcPoolStats:
+      properties:
+        base_id:
+          description: Base token id
+          type: string
+        base_liquidity:
+          description: Base asset liquidity
+          type: string
+        base_name:
+          description: Base token name
+          type: string
+        base_symbol:
+          description: Base token symbol
+          type: string
+        base_volume:
+          description: Volume of base asset
+          type: string
+        last_price:
+          description: Last asset quota price in base assets
+          type: string
+        quote_id:
+          description: Quote token address
+          type: string
+        quote_liquidity:
+          description: Quote asset liquidity
+          type: string
+        quote_name:
+          description: Quote token name
+          type: string
+        quote_symbol:
+          description: Quote token symbol
+          type: string
+        quote_volume:
+          description: Volume of quote asset
+          type: string
+        url:
+          description: URL to pool
+          type: string
+      required:
+      - base_id
+      - base_liquidity
+      - base_name
+      - base_symbol
+      - base_volume
+      - last_price
+      - quote_id
+      - quote_liquidity
+      - quote_name
+      - quote_symbol
+      - quote_volume
+      - url
+      type: object
+    FarmInfoSchema:
+      example:
+        min_stake_duration_s: min_stake_duration_s
+        minter_address: minter_address
+        nft_infos:
+        - address: address
+          nonclaimed_rewards: nonclaimed_rewards
+          create_timestamp: create_timestamp
+          staked_tokens: staked_tokens
+          min_unstake_timestamp: min_unstake_timestamp
+          status: status
+        - address: address
+          nonclaimed_rewards: nonclaimed_rewards
+          create_timestamp: create_timestamp
+          staked_tokens: staked_tokens
+          min_unstake_timestamp: min_unstake_timestamp
+          status: status
+        reward_token_address: reward_token_address
+        apy: apy
+        pool_address: pool_address
+        status: status
+      properties:
+        apy:
+          description: Annual percentage yield
+          nullable: true
+          type: string
+        min_stake_duration_s:
+          description: Minimal stake duration seconds
+          type: string
+        minter_address:
+          description: Address of the farm
+          type: string
+        nft_infos:
+          description: Farm NFT list
+          items:
+            $ref: '#/components/schemas/FarmNftInfoSchema'
+          type: array
+        pool_address:
+          description: Address of the pool
+          type: string
+        reward_token_address:
+          description: Address of the reward token
+          type: string
+        status:
+          description: Minter status
+          type: string
+      required:
+      - min_stake_duration_s
+      - minter_address
+      - nft_infos
+      - pool_address
+      - reward_token_address
+      - status
+      type: object
+    FarmNftInfoSchema:
+      example:
+        address: address
+        nonclaimed_rewards: nonclaimed_rewards
+        create_timestamp: create_timestamp
+        staked_tokens: staked_tokens
+        min_unstake_timestamp: min_unstake_timestamp
+        status: status
+      properties:
+        address:
+          description: NFT address
+          type: string
+        create_timestamp:
+          description: NFT creation timestamp
+          type: string
+        min_unstake_timestamp:
+          description: Minimal unstake timestamp
+          type: string
+        nonclaimed_rewards:
+          description: Nonclaimed rewards
+          type: string
+        staked_tokens:
+          description: Amount of staked tokens
+          type: string
+        status:
+          description: NFT status
+          type: string
+      required:
+      - address
+      - create_timestamp
+      - min_unstake_timestamp
+      - nonclaimed_rewards
+      - staked_tokens
+      - status
+      type: object
+    OperationStat:
+      example:
+        asset0_reserve: asset0_reserve
+        router_address: router_address
+        asset1_address: asset1_address
+        lp_token_delta: lp_token_delta
+        operation_type: swap
+        asset0_address: asset0_address
+        fee_asset_address: fee_asset_address
+        pool_tx_lt: 0
+        referral_fee_amount: referral_fee_amount
+        asset1_delta: asset1_delta
+        wallet_tx_hash: wallet_tx_hash
+        wallet_address: wallet_address
+        destination_wallet_address: destination_wallet_address
+        pool_tx_hash: pool_tx_hash
+        wallet_tx_lt: wallet_tx_lt
+        lp_fee_amount: lp_fee_amount
+        pool_address: pool_address
+        referral_address: referral_address
+        asset0_delta: asset0_delta
+        protocol_fee_amount: protocol_fee_amount
+        lp_token_supply: lp_token_supply
+        success: true
+        asset1_amount: asset1_amount
+        exit_code: exit_code
+        wallet_tx_timestamp: wallet_tx_timestamp
+        asset0_amount: asset0_amount
+        pool_tx_timestamp: pool_tx_timestamp
+        asset1_reserve: asset1_reserve
+      properties:
+        asset0_address:
+          description: Address of asset0
+          type: string
+        asset0_amount:
+          description: Amount of asset0
+          type: string
+        asset0_delta:
+          description: Delta of asset0
+          type: string
+        asset0_reserve:
+          description: Reserve of asset0
+          type: string
+        asset1_address:
+          description: Address of asset1
+          type: string
+        asset1_amount:
+          description: Amount of asset1
+          type: string
+        asset1_delta:
+          description: Delta of asset1
+          type: string
+        asset1_reserve:
+          description: Reserve of asset1
+          type: string
+        destination_wallet_address:
+          description: Address of destination wallet
+          type: string
+        exit_code:
+          description: Operation exit code
+          type: string
+        fee_asset_address:
+          description: Liquidity pool fee asset address
+          nullable: true
+          type: string
+        lp_fee_amount:
+          description: Liquidity pool fee amount
+          type: string
+        lp_token_delta:
+          description: Liquidity pool token amount change
+          type: string
+        lp_token_supply:
+          description: Liquidity pool token amount supply
+          type: string
+        operation_type:
+          description: Type of operation
+          example: swap
+          type: string
+        pool_address:
+          description: Address of the pool
+          type: string
+        pool_tx_hash:
+          description: Transaction hash
+          type: string
+        pool_tx_lt:
+          description: Transaction logical time
+          format: int64
+          type: integer
+        pool_tx_timestamp:
+          description: Transaction timestamp
+          type: string
+        protocol_fee_amount:
+          description: Protocol fee amount
+          type: string
+        referral_address:
+          description: Referral fee address
+          nullable: true
+          type: string
+        referral_fee_amount:
+          description: Referral fee amount
+          type: string
+        router_address:
+          description: Address of the router
+          type: string
+        success:
+          description: Operation is successful
+          type: boolean
+        wallet_address:
+          description: Wallet address
+          type: string
+        wallet_tx_hash:
+          description: Transaction hash
+          type: string
+        wallet_tx_lt:
+          description: Transaction logical time
+          type: string
+        wallet_tx_timestamp:
+          description: Transaction timestamp
+          type: string
+      required:
+      - asset0_address
+      - asset0_amount
+      - asset0_delta
+      - asset0_reserve
+      - asset1_address
+      - asset1_amount
+      - asset1_delta
+      - asset1_reserve
+      - destination_wallet_address
+      - exit_code
+      - lp_fee_amount
+      - lp_token_delta
+      - lp_token_supply
+      - operation_type
+      - pool_address
+      - pool_tx_hash
+      - pool_tx_lt
+      - pool_tx_timestamp
+      - protocol_fee_amount
+      - referral_fee_amount
+      - router_address
+      - success
+      - wallet_address
+      - wallet_tx_hash
+      - wallet_tx_lt
+      - wallet_tx_timestamp
+      type: object
+    OperationStatus:
+      properties:
+        address:
+          description: Wallet address
+          type: string
+        balance_deltas:
+          description: Changes in balance
+          type: string
+        coins:
+          description: Transaction coins
+          type: string
+        exit_code:
+          description: Exit code of operation
+          type: string
+        logical_time:
+          description: Operation logical time
+          type: string
+        query_id:
+          description: Id of operation status query
+          type: string
+        tx_hash:
+          description: Operation hash
+          format: binary
+          type: string
+      required:
+      - address
+      - balance_deltas
+      - coins
+      - exit_code
+      - logical_time
+      - query_id
+      - tx_hash
+      type: object
+    OperationsInfo:
+      example:
+        asset1_info:
+          wallet_address: wallet_address
+          symbol: symbol
+          dex_price_usd: dex_price_usd
+          image_url: image_url
+          kind: null
+          deprecated: true
+          third_party_usd_price: third_party_usd_price
+          community: true
+          contract_address: contract_address
+          display_name: display_name
+          blacklisted: true
+          third_party_price_usd: third_party_price_usd
+          default_symbol: true
+          balance: balance
+          decimals: 0
+          dex_usd_price: dex_usd_price
+        asset0_info:
+          wallet_address: wallet_address
+          symbol: symbol
+          dex_price_usd: dex_price_usd
+          image_url: image_url
+          kind: null
+          deprecated: true
+          third_party_usd_price: third_party_usd_price
+          community: true
+          contract_address: contract_address
+          display_name: display_name
+          blacklisted: true
+          third_party_price_usd: third_party_price_usd
+          default_symbol: true
+          balance: balance
+          decimals: 0
+          dex_usd_price: dex_usd_price
+        operation:
+          asset0_reserve: asset0_reserve
+          router_address: router_address
+          asset1_address: asset1_address
+          lp_token_delta: lp_token_delta
+          operation_type: swap
+          asset0_address: asset0_address
+          fee_asset_address: fee_asset_address
+          pool_tx_lt: 0
+          referral_fee_amount: referral_fee_amount
+          asset1_delta: asset1_delta
+          wallet_tx_hash: wallet_tx_hash
+          wallet_address: wallet_address
+          destination_wallet_address: destination_wallet_address
+          pool_tx_hash: pool_tx_hash
+          wallet_tx_lt: wallet_tx_lt
+          lp_fee_amount: lp_fee_amount
+          pool_address: pool_address
+          referral_address: referral_address
+          asset0_delta: asset0_delta
+          protocol_fee_amount: protocol_fee_amount
+          lp_token_supply: lp_token_supply
+          success: true
+          asset1_amount: asset1_amount
+          exit_code: exit_code
+          wallet_tx_timestamp: wallet_tx_timestamp
+          asset0_amount: asset0_amount
+          pool_tx_timestamp: pool_tx_timestamp
+          asset1_reserve: asset1_reserve
+      properties:
+        asset0_info:
+          $ref: '#/components/schemas/AssetInfoSchema'
+        asset1_info:
+          $ref: '#/components/schemas/AssetInfoSchema'
+        operation:
+          $ref: '#/components/schemas/OperationStat'
+      required:
+      - asset0_info
+      - asset1_info
+      - operation
+      type: object
+    PoolInfoSchema:
+      example:
+        apy_1d: apy_1d
+        protocol_fee: protocol_fee
+        router_address: router_address
+        apy_30d: apy_30d
+        lp_total_supply: lp_total_supply
+        address: address
+        lp_price_usd: lp_price_usd
+        lp_balance: lp_balance
+        collected_token1_protocol_fee: collected_token1_protocol_fee
+        deprecated: true
+        collected_token0_protocol_fee: collected_token0_protocol_fee
+        reserve1: reserve1
+        lp_fee: lp_fee
+        protocol_fee_address: protocol_fee_address
+        reserve0: reserve0
+        apy_7d: apy_7d
+        lp_account_address: lp_account_address
+        token0_balance: token0_balance
+        ref_fee: ref_fee
+        token1_address: token1_address
+        token0_address: token0_address
+        lp_wallet_address: lp_wallet_address
+        token1_balance: token1_balance
+        lp_total_supply_usd: lp_total_supply_usd
+      properties:
+        address:
+          description: Address of pool
+          type: string
+        apy_1d:
+          description: Annual percentage yield on the last day
+          nullable: true
+          type: string
+        apy_30d:
+          description: Annual percentage yield on the last month
+          nullable: true
+          type: string
+        apy_7d:
+          description: Annual percentage yield on the last week
+          nullable: true
+          type: string
+        collected_token0_protocol_fee:
+          description: Protocol fee collected in token0
+          type: string
+        collected_token1_protocol_fee:
+          description: Protocol fee collected in token1
+          type: string
+        deprecated:
+          description: Pool is deprecated
+          type: boolean
+        lp_account_address:
+          description: Account address of liquidity pool tokens
+          nullable: true
+          type: string
+        lp_balance:
+          description: Balance of liquidity pool tokens
+          nullable: true
+          type: string
+        lp_fee:
+          description: Fee of liquidity pool token
+          type: string
+        lp_price_usd:
+          description: Price of liquidity pool token in USD
+          nullable: true
+          type: string
+        lp_total_supply:
+          description: Total supply of liquidity pool tokens
+          type: string
+        lp_total_supply_usd:
+          description: Total supply of liquidity pool tokens in USD
+          nullable: true
+          type: string
+        lp_wallet_address:
+          description: Wallet address of liquidity pool tokens
+          nullable: true
+          type: string
+        protocol_fee:
+          description: Fee of protocol
+          type: string
+        protocol_fee_address:
+          description: Address of protocol fee
+          type: string
+        ref_fee:
+          description: Referral fee
+          type: string
+        reserve0:
+          description: Reserve of token0 in pool
+          type: string
+        reserve1:
+          description: Reserve of token1 in pool
+          type: string
+        router_address:
+          description: Address of router
+          type: string
+        token0_address:
+          description: Address of token0
+          type: string
+        token0_balance:
+          description: Balance of token0
+          nullable: true
+          type: string
+        token1_address:
+          description: Address of token1
+          type: string
+        token1_balance:
+          description: Balance of token1
+          nullable: true
+          type: string
+      required:
+      - address
+      - collected_token0_protocol_fee
+      - collected_token1_protocol_fee
+      - deprecated
+      - lp_fee
+      - lp_total_supply
+      - protocol_fee
+      - protocol_fee_address
+      - ref_fee
+      - reserve0
+      - reserve1
+      - router_address
+      - token0_address
+      - token1_address
+      type: object
+    PoolStats:
+      example:
+        quote_name: quote_name
+        base_name: base_name
+        router_address: router_address
+        lp_price_usd: lp_price_usd
+        base_id: base_id
+        quote_volume: quote_volume
+        base_volume: base_volume
+        quote_id: quote_id
+        base_liquidity: base_liquidity
+        apy: apy
+        pool_address: pool_address
+        url: url
+        quote_symbol: quote_symbol
+        quote_liquidity: quote_liquidity
+        base_symbol: base_symbol
+        lp_price: lp_price
+        last_price: last_price
+      properties:
+        apy:
+          description: Annual percentage yield
+          nullable: true
+          type: string
+        base_id:
+          description: Base asset id
+          type: string
+        base_liquidity:
+          description: Amount of liquidity of base asset
+          type: string
+        base_name:
+          description: Base asset name
+          type: string
+        base_symbol:
+          description: Base asset symbol
+          type: string
+        base_volume:
+          description: volume of base asset
+          type: string
+        last_price:
+          description: Last asset quota price in base assets
+          type: string
+        lp_price:
+          description: "[DEPRECATED] Liquidity pool token price"
+          type: string
+        lp_price_usd:
+          description: Liquidity pool token price
+          type: string
+        pool_address:
+          description: Address of the pool
+          type: string
+        quote_id:
+          description: Quote asset id
+          type: string
+        quote_liquidity:
+          description: Amount of liquidity of quote asset
+          type: string
+        quote_name:
+          description: Quote asset name
+          type: string
+        quote_symbol:
+          description: Quote asset symbol
+          type: string
+        quote_volume:
+          description: Volume of quote asset
+          type: string
+        router_address:
+          description: Address of router
+          type: string
+        url:
+          description: URL of the pool
+          type: string
+      required:
+      - base_id
+      - base_liquidity
+      - base_name
+      - base_symbol
+      - base_volume
+      - last_price
+      - lp_price
+      - lp_price_usd
+      - pool_address
+      - quote_id
+      - quote_liquidity
+      - quote_name
+      - quote_symbol
+      - quote_volume
+      - router_address
+      - url
+      type: object
+    get_asset_list_200_response:
+      example:
+        asset_list:
+        - wallet_address: wallet_address
+          symbol: symbol
+          dex_price_usd: dex_price_usd
+          image_url: image_url
+          kind: null
+          deprecated: true
+          third_party_usd_price: third_party_usd_price
+          community: true
+          contract_address: contract_address
+          display_name: display_name
+          blacklisted: true
+          third_party_price_usd: third_party_price_usd
+          default_symbol: true
+          balance: balance
+          decimals: 0
+          dex_usd_price: dex_usd_price
+        - wallet_address: wallet_address
+          symbol: symbol
+          dex_price_usd: dex_price_usd
+          image_url: image_url
+          kind: null
+          deprecated: true
+          third_party_usd_price: third_party_usd_price
+          community: true
+          contract_address: contract_address
+          display_name: display_name
+          blacklisted: true
+          third_party_price_usd: third_party_price_usd
+          default_symbol: true
+          balance: balance
+          decimals: 0
+          dex_usd_price: dex_usd_price
+      properties:
+        asset_list:
+          items:
+            $ref: '#/components/schemas/AssetInfoSchema'
+          type: array
+      required:
+      - asset_list
+      type: object
+    get_farm_list_200_response:
+      example:
+        farm_list:
+        - min_stake_duration_s: min_stake_duration_s
+          minter_address: minter_address
+          nft_infos:
+          - address: address
+            nonclaimed_rewards: nonclaimed_rewards
+            create_timestamp: create_timestamp
+            staked_tokens: staked_tokens
+            min_unstake_timestamp: min_unstake_timestamp
+            status: status
+          - address: address
+            nonclaimed_rewards: nonclaimed_rewards
+            create_timestamp: create_timestamp
+            staked_tokens: staked_tokens
+            min_unstake_timestamp: min_unstake_timestamp
+            status: status
+          reward_token_address: reward_token_address
+          apy: apy
+          pool_address: pool_address
+          status: status
+        - min_stake_duration_s: min_stake_duration_s
+          minter_address: minter_address
+          nft_infos:
+          - address: address
+            nonclaimed_rewards: nonclaimed_rewards
+            create_timestamp: create_timestamp
+            staked_tokens: staked_tokens
+            min_unstake_timestamp: min_unstake_timestamp
+            status: status
+          - address: address
+            nonclaimed_rewards: nonclaimed_rewards
+            create_timestamp: create_timestamp
+            staked_tokens: staked_tokens
+            min_unstake_timestamp: min_unstake_timestamp
+            status: status
+          reward_token_address: reward_token_address
+          apy: apy
+          pool_address: pool_address
+          status: status
+      properties:
+        farm_list:
+          items:
+            $ref: '#/components/schemas/FarmInfoSchema'
+          type: array
+      required:
+      - farm_list
+      type: object
+    get_wallet_address_200_response:
+      example:
+        address: address
+      properties:
+        address:
+          type: string
+      required:
+      - address
+      type: object
+    get_pool_list_200_response:
+      example:
+        pool_list:
+        - apy_1d: apy_1d
+          protocol_fee: protocol_fee
+          router_address: router_address
+          apy_30d: apy_30d
+          lp_total_supply: lp_total_supply
+          address: address
+          lp_price_usd: lp_price_usd
+          lp_balance: lp_balance
+          collected_token1_protocol_fee: collected_token1_protocol_fee
+          deprecated: true
+          collected_token0_protocol_fee: collected_token0_protocol_fee
+          reserve1: reserve1
+          lp_fee: lp_fee
+          protocol_fee_address: protocol_fee_address
+          reserve0: reserve0
+          apy_7d: apy_7d
+          lp_account_address: lp_account_address
+          token0_balance: token0_balance
+          ref_fee: ref_fee
+          token1_address: token1_address
+          token0_address: token0_address
+          lp_wallet_address: lp_wallet_address
+          token1_balance: token1_balance
+          lp_total_supply_usd: lp_total_supply_usd
+        - apy_1d: apy_1d
+          protocol_fee: protocol_fee
+          router_address: router_address
+          apy_30d: apy_30d
+          lp_total_supply: lp_total_supply
+          address: address
+          lp_price_usd: lp_price_usd
+          lp_balance: lp_balance
+          collected_token1_protocol_fee: collected_token1_protocol_fee
+          deprecated: true
+          collected_token0_protocol_fee: collected_token0_protocol_fee
+          reserve1: reserve1
+          lp_fee: lp_fee
+          protocol_fee_address: protocol_fee_address
+          reserve0: reserve0
+          apy_7d: apy_7d
+          lp_account_address: lp_account_address
+          token0_balance: token0_balance
+          ref_fee: ref_fee
+          token1_address: token1_address
+          token0_address: token0_address
+          lp_wallet_address: lp_wallet_address
+          token1_balance: token1_balance
+          lp_total_supply_usd: lp_total_supply_usd
+      properties:
+        pool_list:
+          items:
+            $ref: '#/components/schemas/PoolInfoSchema'
+          type: array
+      required:
+      - pool_list
+      type: object
+    dex_reverse_simulate_swap_200_response:
+      example:
+        offer_address: offer_address
+        min_ask_units: min_ask_units
+        router_address: router_address
+        offer_units: offer_units
+        fee_address: fee_address
+        fee_units: fee_units
+        slippage_tolerance: slippage_tolerance
+        ask_address: ask_address
+        pool_address: pool_address
+        price_impact: price_impact
+        swap_rate: swap_rate
+        ask_units: ask_units
+        fee_percent: fee_percent
+      properties:
+        ask_address:
+          description: Address of the wallet to which the operation is simulated
+          type: string
+        ask_units:
+          description: Token units asked
+          type: string
+        fee_address:
+          description: Fee address
+          type: string
+        fee_percent:
+          description: fee percent
+          type: string
+        fee_units:
+          description: Fee units
+          type: string
+        min_ask_units:
+          description: Minimal amount of ask units
+          type: string
+        offer_address:
+          description: Address of the wallet from which the operation is simulated
+          type: string
+        offer_units:
+          description: Token units offered
+          type: string
+        pool_address:
+          description: Address of the pool
+          type: string
+        price_impact:
+          description: Price impact
+          type: string
+        router_address:
+          description: Address of the operation router
+          type: string
+        slippage_tolerance:
+          description: Difference between the original price of order and the final
+            price
+          type: string
+        swap_rate:
+          description: Swap rate
+          type: string
+      required:
+      - ask_address
+      - ask_units
+      - fee_address
+      - fee_percent
+      - fee_units
+      - min_ask_units
+      - offer_address
+      - offer_units
+      - pool_address
+      - price_impact
+      - router_address
+      - slippage_tolerance
+      - swap_rate
+      type: object
+    get_operation_stats_200_response:
+      example:
+        operations:
+        - asset1_info:
+            wallet_address: wallet_address
+            symbol: symbol
+            dex_price_usd: dex_price_usd
+            image_url: image_url
+            kind: null
+            deprecated: true
+            third_party_usd_price: third_party_usd_price
+            community: true
+            contract_address: contract_address
+            display_name: display_name
+            blacklisted: true
+            third_party_price_usd: third_party_price_usd
+            default_symbol: true
+            balance: balance
+            decimals: 0
+            dex_usd_price: dex_usd_price
+          asset0_info:
+            wallet_address: wallet_address
+            symbol: symbol
+            dex_price_usd: dex_price_usd
+            image_url: image_url
+            kind: null
+            deprecated: true
+            third_party_usd_price: third_party_usd_price
+            community: true
+            contract_address: contract_address
+            display_name: display_name
+            blacklisted: true
+            third_party_price_usd: third_party_price_usd
+            default_symbol: true
+            balance: balance
+            decimals: 0
+            dex_usd_price: dex_usd_price
+          operation:
+            asset0_reserve: asset0_reserve
+            router_address: router_address
+            asset1_address: asset1_address
+            lp_token_delta: lp_token_delta
+            operation_type: swap
+            asset0_address: asset0_address
+            fee_asset_address: fee_asset_address
+            pool_tx_lt: 0
+            referral_fee_amount: referral_fee_amount
+            asset1_delta: asset1_delta
+            wallet_tx_hash: wallet_tx_hash
+            wallet_address: wallet_address
+            destination_wallet_address: destination_wallet_address
+            pool_tx_hash: pool_tx_hash
+            wallet_tx_lt: wallet_tx_lt
+            lp_fee_amount: lp_fee_amount
+            pool_address: pool_address
+            referral_address: referral_address
+            asset0_delta: asset0_delta
+            protocol_fee_amount: protocol_fee_amount
+            lp_token_supply: lp_token_supply
+            success: true
+            asset1_amount: asset1_amount
+            exit_code: exit_code
+            wallet_tx_timestamp: wallet_tx_timestamp
+            asset0_amount: asset0_amount
+            pool_tx_timestamp: pool_tx_timestamp
+            asset1_reserve: asset1_reserve
+        - asset1_info:
+            wallet_address: wallet_address
+            symbol: symbol
+            dex_price_usd: dex_price_usd
+            image_url: image_url
+            kind: null
+            deprecated: true
+            third_party_usd_price: third_party_usd_price
+            community: true
+            contract_address: contract_address
+            display_name: display_name
+            blacklisted: true
+            third_party_price_usd: third_party_price_usd
+            default_symbol: true
+            balance: balance
+            decimals: 0
+            dex_usd_price: dex_usd_price
+          asset0_info:
+            wallet_address: wallet_address
+            symbol: symbol
+            dex_price_usd: dex_price_usd
+            image_url: image_url
+            kind: null
+            deprecated: true
+            third_party_usd_price: third_party_usd_price
+            community: true
+            contract_address: contract_address
+            display_name: display_name
+            blacklisted: true
+            third_party_price_usd: third_party_price_usd
+            default_symbol: true
+            balance: balance
+            decimals: 0
+            dex_usd_price: dex_usd_price
+          operation:
+            asset0_reserve: asset0_reserve
+            router_address: router_address
+            asset1_address: asset1_address
+            lp_token_delta: lp_token_delta
+            operation_type: swap
+            asset0_address: asset0_address
+            fee_asset_address: fee_asset_address
+            pool_tx_lt: 0
+            referral_fee_amount: referral_fee_amount
+            asset1_delta: asset1_delta
+            wallet_tx_hash: wallet_tx_hash
+            wallet_address: wallet_address
+            destination_wallet_address: destination_wallet_address
+            pool_tx_hash: pool_tx_hash
+            wallet_tx_lt: wallet_tx_lt
+            lp_fee_amount: lp_fee_amount
+            pool_address: pool_address
+            referral_address: referral_address
+            asset0_delta: asset0_delta
+            protocol_fee_amount: protocol_fee_amount
+            lp_token_supply: lp_token_supply
+            success: true
+            asset1_amount: asset1_amount
+            exit_code: exit_code
+            wallet_tx_timestamp: wallet_tx_timestamp
+            asset0_amount: asset0_amount
+            pool_tx_timestamp: pool_tx_timestamp
+            asset1_reserve: asset1_reserve
+      properties:
+        operations:
+          items:
+            $ref: '#/components/schemas/OperationsInfo'
+          type: array
+      required:
+      - operations
+      type: object
+    get_pool_stats_200_response:
+      example:
+        unique_wallets_count: 0
+        stats:
+        - quote_name: quote_name
+          base_name: base_name
+          router_address: router_address
+          lp_price_usd: lp_price_usd
+          base_id: base_id
+          quote_volume: quote_volume
+          base_volume: base_volume
+          quote_id: quote_id
+          base_liquidity: base_liquidity
+          apy: apy
+          pool_address: pool_address
+          url: url
+          quote_symbol: quote_symbol
+          quote_liquidity: quote_liquidity
+          base_symbol: base_symbol
+          lp_price: lp_price
+          last_price: last_price
+        - quote_name: quote_name
+          base_name: base_name
+          router_address: router_address
+          lp_price_usd: lp_price_usd
+          base_id: base_id
+          quote_volume: quote_volume
+          base_volume: base_volume
+          quote_id: quote_id
+          base_liquidity: base_liquidity
+          apy: apy
+          pool_address: pool_address
+          url: url
+          quote_symbol: quote_symbol
+          quote_liquidity: quote_liquidity
+          base_symbol: base_symbol
+          lp_price: lp_price
+          last_price: last_price
+        until: until
+        since: since
+      properties:
+        since:
+          description: Time since the stats are requested (YYYY-MM-DDTHH:MM:SS)
+          type: string
+        stats:
+          description: Stats of each pool
+          items:
+            $ref: '#/components/schemas/PoolStats'
+          type: array
+        unique_wallets_count:
+          description: Number of unique wallets operated in pool
+          format: int64
+          minimum: 0
+          type: integer
+        until:
+          description: Time until the stats are requested (YYYY-MM-DDTHH:MM:SS)
+          type: string
+      required:
+      - since
+      - stats
+      - unique_wallets_count
+      - until
+      type: object
+    dex_swap_status_200_response_oneOf:
+      allOf:
+      - $ref: '#/components/schemas/OperationStatus'
+      - properties:
+          '@type':
+            enum:
+            - Found
+            type: string
+        required:
+        - '@type'
+        type: object
+      example:
+        address: address
+        query_id: query_id
+        coins: coins
+        logical_time: logical_time
+        '@type': Found
+        balance_deltas: balance_deltas
+        exit_code: exit_code
+        tx_hash: ""
+    dex_swap_status_200_response_oneOf_1:
+      properties:
+        '@type':
+          enum:
+          - NotFound
+          type: string
+      required:
+      - '@type'
+      type: object
+    dex_swap_status_200_response:
+      discriminator:
+        propertyName: '@type'
+      oneOf:
+      - $ref: '#/components/schemas/dex_swap_status_200_response_oneOf'
+      - $ref: '#/components/schemas/dex_swap_status_200_response_oneOf_1'
